@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import argparse
@@ -38,11 +38,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='''
     Extracts IMU messages from bagfile.
     ''')
-    parser.add_argument('bag', help='Bagfile')
-    parser.add_argument('topic', help='Topic')
-    parser.add_argument('--msg_type', default='PoseStamped',
+    parser.add_argument('--bag', default='/home/ldd/svo_ws/src/rpg_trajectory_evaluation/results/euroc_fronted_stereo/laptop/V2_01/no_imu/V2_01_fronted_stereo.bag', help='Bagfile')
+    parser.add_argument('--topic', default='/svo/pose_imu', help='Topic')
+    parser.add_argument('--msg_type', default='PoseWithCovarianceStamped',
                         help='message type')
-    parser.add_argument('--output', default='stamped_poses.txt',
+    parser.add_argument('--output', default='stamped_traj_estimate.txt',
                         help='output filename')
     args = parser.parse_args()
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import argparse
@@ -14,6 +14,8 @@ from trajectory import Trajectory
 import plot_utils as pu
 from fn_constants import kNsToEstFnMapping, kNsToMatchFnMapping, kFnExt
 from multiple_traj_errors import MulTrajError
+import transformations as tf
+from scipy.spatial.transform import Rotation as R
 
 init(autoreset=True)
 rc('font', **{'family': 'serif', 'serif': ['Cardo']})
@@ -170,6 +172,8 @@ if __name__ == '__main__':
 
         print(Fore.MAGENTA +
               ">>> Plotting absolute error for one trajectory...")
+        
+        # trajectory_top_posyaw
         fig = plt.figure(figsize=(6, 5.5))
         ax = fig.add_subplot(111, aspect='equal',
                              xlabel='x [m]', ylabel='y [m]')
@@ -182,6 +186,7 @@ if __name__ == '__main__':
         fig.savefig(plot_dir_i+'/trajectory_top' + '_' + plot_traj.align_str +
                     FORMAT, bbox_inches="tight")
 
+        # plot_trajectory_side
         fig = plt.figure(figsize=(6, 5.5))
         ax = fig.add_subplot(111, aspect='equal',
                              xlabel='x [m]', ylabel='z [m]')
@@ -192,6 +197,7 @@ if __name__ == '__main__':
         fig.savefig(plot_dir_i+'/trajectory_side' + '_' + plot_traj.align_str +
                     FORMAT, bbox_inches="tight")
 
+        # translation_error
         fig = plt.figure(figsize=(8, 2.5))
         ax = fig.add_subplot(
             111, xlabel='Distance [m]', ylabel='Position Drift [mm]',
@@ -204,6 +210,7 @@ if __name__ == '__main__':
         fig.savefig(plot_dir_i+'/translation_error' + '_' + plot_traj.align_str
                     + FORMAT, bbox_inches="tight")
 
+        # rotation_error
         fig = plt.figure(figsize=(8, 2.5))
         ax = fig.add_subplot(
             111, xlabel='Distance [m]', ylabel='Orient. err. [deg]',
@@ -217,6 +224,7 @@ if __name__ == '__main__':
         fig.savefig(plot_dir_i+'/rotation_error'+'_'+plot_traj.align_str +
                     FORMAT, bbox_inches='tight')
 
+        # scale_error
         fig = plt.figure(figsize=(8, 2.5))
         ax = fig.add_subplot(
             111, xlabel='Distance [m]', ylabel='Scale Drift [\%]',
@@ -230,6 +238,62 @@ if __name__ == '__main__':
         fig.savefig(plot_dir_i+'/scale_error'+'_'+plot_traj.align_str+FORMAT,
                     bbox_inches='tight')
 
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(231, 
+                             xlabel='t [s]', ylabel='x [m]')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, plot_traj.p_es_aligned[:, 0], 'b', 'Estimate')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, plot_traj.p_gt[:, 0], 'm', 'Groundtruth')
+        
+        ax = fig.add_subplot(232, 
+                             xlabel='t [s]', ylabel='y [m]')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, plot_traj.p_es_aligned[:, 1], 'b', 'Estimate')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, plot_traj.p_gt[:, 1], 'm', 'Groundtruth')
+        
+        ax = fig.add_subplot(233, 
+                             xlabel='t [s]', ylabel='z [m]')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, plot_traj.p_es_aligned[:, 2], 'b', 'Estimate')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, plot_traj.p_gt[:, 2], 'm', 'Groundtruth')
+        
+        e_yprs = []
+        gt_yprs = []
+        
+        for i in range(plot_traj.q_es_aligned.shape[0]):
+            
+            R_we = tf.matrix_from_quaternion(plot_traj.q_es_aligned[i, :])
+            R_wg = tf.matrix_from_quaternion(plot_traj.q_gt[i, :])
+
+            e_ypr = tf.euler_from_matrix(R_we, 'rzyx')
+            gt_ypr = tf.euler_from_matrix(R_wg, 'rzyx')
+
+            # e_ypr = R.from_quat(plot_traj.q_es_aligned[i, :]).as_euler("xyz", degrees=True)
+            # gt_ypr = R.from_quat(plot_traj.q_gt[i, :]).as_euler("xyz", degrees=True)
+            
+            e_yprs.append(e_ypr)
+            gt_yprs.append(gt_ypr)
+            
+        e_yprs = np.array(e_yprs)
+        gt_yprs = np.array(gt_yprs)
+        
+        ax = fig.add_subplot(234,
+                             xlabel='t [s]', ylabel='roll [deg]')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, e_yprs[:, 2], 'b', 'Estimate')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, gt_yprs[:, 2], 'm', 'Groundtruth')
+        
+        ax = fig.add_subplot(235, 
+                             xlabel='t [s]', ylabel='pitch [deg]')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, e_yprs[:, 1], 'b', 'Estimate')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, gt_yprs[:, 1], 'm', 'Groundtruth')
+        
+        ax = fig.add_subplot(236, 
+                             xlabel='t [s]', ylabel='yaw [deg]')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, e_yprs[:, 0], 'b', 'Estimate')
+        pu.plot_trajectory(ax, plot_traj.accum_distances, gt_yprs[:, 0], 'm', 'Groundtruth')
+        
+        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        fig.tight_layout()
+        fig.savefig(plot_dir_i+'/trajectory' + '_' + plot_traj.align_str +
+                    FORMAT, bbox_inches="tight")
+        
         if args.plot_scale_traj:
             fig = plt.figure(figsize=(6, 12))
             ax_top = fig.add_subplot(211, aspect='equal',

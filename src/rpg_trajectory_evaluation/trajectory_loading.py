@@ -12,7 +12,7 @@ init(autoreset=True)
 
 def load_estimate_and_associate(fn_gt, 
                                 fn_es, fn_matches, data_gt=None,
-                                max_diff=0.02,
+                                max_diff=0.05,
                                 start_t_sec=-float('inf'),
                                 end_t_sec=float('inf')):
     matches = np.array([])
@@ -60,7 +60,7 @@ def load_stamped_dataset(results_dir,
                          nm_gt='stamped_groundtruth.txt',
                          nm_est='stamped_traj_estimate.txt',
                          nm_matches='stamped_est_gt_matches.txt',
-                         max_diff=0.02,
+                         max_diff=0.05,
                          start_t_sec=-float('inf'),
                          end_t_sec=float('inf')):
     '''

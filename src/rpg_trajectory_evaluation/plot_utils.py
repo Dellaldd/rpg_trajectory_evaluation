@@ -61,12 +61,18 @@ def plot_trajectory_top(ax, pos, color, name, alpha=1.0):
     ax.grid(ls='--', color='0.7')
     # pos_0 = pos - pos[0, :]
     ax.plot(pos[:, 0], pos[:, 1], color=color, linestyle='-', alpha=alpha, label=name)
+    
 
 
 def plot_trajectory_side(ax, pos, color, name, alpha=1.0):
     ax.grid(ls='--', color='0.7')
     # pos_0 = pos - pos[0, :]
     ax.plot(pos[:, 0], pos[:, 2], color=color, linestyle='-', alpha=alpha, label=name)
+
+def plot_trajectory(ax, t, pos, color, name, alpha=1.0):
+    ax.grid(ls='--', color='0.7')
+    # pos_0 = pos - pos[0, :]
+    ax.plot(t, pos, color=color, linestyle='-', alpha=alpha, label=name)
 
 
 def plot_aligned_top(ax, p_gt, p_es, n_align_frames):
@@ -88,4 +94,4 @@ def plot_error_n_dim(ax, distances, errors, results_dir,
     assert len(colors) == errors.shape[1]
     for i in range(len(colors)):
         ax.plot(distances, errors[:, i],
-                color=color[i], linestyle='-', label=labels[i])
+                color=colors[i], linestyle='-', label=labels[i])
